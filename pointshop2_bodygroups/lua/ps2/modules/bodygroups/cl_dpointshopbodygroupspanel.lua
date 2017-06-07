@@ -56,7 +56,6 @@ function PANEL:Init()
 
 end
 
- --This is actually based on code from pointshop 2 not sandbox, i guess they copied it from sandbox, so what???
 function PANEL:UpdateAndList() 
 		self.bdcontrolspanel:Clear()
 		
