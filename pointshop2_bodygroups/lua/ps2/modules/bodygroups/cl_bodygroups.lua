@@ -1,6 +1,4 @@
  --{Made by SNO}--
- 
---Piss off already. you can figure this stuff out without reading this /terrible/ code.
 
 local Player = LocalPlayer() 
 
