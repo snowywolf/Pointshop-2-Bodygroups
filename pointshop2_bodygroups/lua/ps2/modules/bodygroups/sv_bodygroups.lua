@@ -79,7 +79,7 @@ net.Receive("Bodygroups_Set", function(len, ply)
     local ModelID = net.ReadInt(32)
     local groups = net.ReadString()
 	local skin = net.ReadString()
-	if ply.BGSpam != nil and ply.BGSpam > SysTime() then ply:ChatPrint(FLOOD_TAG.."You just set your bodygroup, please wait a moment before setting them again.") return end
+	if ply.BGSpam != nil and ply.BGSpam > SysTime() then return end
 	
 	ply:UpdateBodygroups(ModelID, skin, groups)
 	ply:SetSkin() --Overwritten skin function to set groups and skin.
