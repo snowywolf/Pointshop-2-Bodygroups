@@ -75,8 +75,6 @@ function meta:SetSkin(skin)
 	end
 end
 
--- hook.Add( "PS2_EquipItem", "Maybeusefulsomeday", function( ply, id, slotused )
-
 net.Receive("Bodygroups_Set", function(len, ply)
     local ModelID = net.ReadInt(32)
     local groups = net.ReadString()
@@ -93,10 +91,3 @@ hook.Add( "PS2_PlayerFullyLoaded", "Playerloaded22", function( ply )
     if !ply:IsValid() then return end
 	ply:LoadBodygroups()
 end )
-
--- hook.Add("LibK_PlayerInitialSpawn", "LoadBodygroups", function(ply)
-	-- timer.Simple(5, function() -- Hm.
-		-- if !ply:IsValid() then return end
-		-- ply:LoadBodygroups()
-	-- end)
--- end)
