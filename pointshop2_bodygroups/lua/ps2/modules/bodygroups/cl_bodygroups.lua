@@ -55,3 +55,7 @@ net.Receive("Bodygroups_Init", function(len)
 	
 	hook.Run( "PS2_DoUpdatePreviewModel" )
 end)
+
+hook.Add( "PS2_PopulateCredits", "AddSkinCreds", function( panel ) 
+    panel:AddCreditSection( "Bodygroups Module", [[ Bodygroups Module by Snowywolf (https://github.com/snowywolf/Pointshop-2-Bodygroups). ]] ) 
+end )
