@@ -52,15 +52,15 @@ net.Receive("Bodygroups_Set", function(len, client)
 
 	client.AntiSpam = SysTime() + 2
 
-    local ItemID = net.ReadInt(32)
-    local Groups = net.ReadString()
+        local ItemID = net.ReadInt(32)
+        local Groups = net.ReadString()
 	local Skin   = net.ReadString()
 	
 	client:SetBodyGroups(Groups)
 	client:SetSkin(Skin)
 	
 	client.BodygroupsData.modelId = ItemID
-    client.BodygroupsData.groups  = Groups
+        client.BodygroupsData.groups  = Groups
 	client.BodygroupsData.skin    = Skin
 
 	client.BodygroupsData:save()
