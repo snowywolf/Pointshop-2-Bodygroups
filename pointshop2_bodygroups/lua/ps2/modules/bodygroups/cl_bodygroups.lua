@@ -33,14 +33,6 @@ hook.Add( "PS2_GetPreviewModel", "BodygroupSupport", function( )
 	}
 end )
 
-hook.Add( "PS2_ItemEquipped", "ItemEquiped", function( ply, item )
-    if Player.PS2_Slots["Model"] != item then return end
-	timer.Simple( 0, function( )
-	    Pointshop2.BodyGroups.ApplyBtn:SetVisible(false)
-	    Pointshop2.BodyGroups:UpdateAndList()
-    end )
-end )
-
 net.Receive("Bodygroups_Init", function(len)
 
 	--while true do
