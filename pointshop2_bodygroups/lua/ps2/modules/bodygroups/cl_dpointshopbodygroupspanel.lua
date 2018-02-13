@@ -1,13 +1,13 @@
- --{Made by SNO}--
+ --{Made by Sno}--
 
 local PANEL = {}
 
 function PANEL:Init()
-	Pointshop2.BodyGroups = self
 	
 	self.id = 0
 	self.skin = 0
 	self.groups = "0"
+	
     self.player = LocalPlayer()
 	
 	self.leftPanel = vgui.Create("DPanel", self)
@@ -17,12 +17,9 @@ function PANEL:Init()
 	self.leftPanel:Dock( LEFT )
 	Derma_Hook( self.leftPanel, "Paint", "Paint", "InnerPanel" )
 
-	self.bdcontrolspanel = vgui.Create("DIconLayout", self.leftPanel)
+	self.bdcontrolspanel = vgui.Create( "DScrollPanel", self.leftPanel )
 	self.bdcontrolspanel:DockMargin( 18, 0, 0, 0)
-	self.bdcontrolspanel:SetSpaceX( 5 )
-	self.bdcontrolspanel:SetSpaceY( 5 )
-	self.bdcontrolspanel:Dock( FILL )
-	self.bdcontrolspanel:SetSkin( "Default" )
+    self.bdcontrolspanel:Dock( FILL )
 	
 	self.bottomPnl = vgui.Create( "DPanel", self.leftPanel )
 	self.bottomPnl:Dock( BOTTOM )
@@ -37,11 +34,13 @@ function PANEL:Init()
 	self.ApplyBtn:SetVisible(false)
 	self.ApplyBtn.DoClick = function()
 	    self.player.BodygroupsData[self.id] = {self.skin, self.groups}
-		hook.Run( "PS2_DoUpdatePreviewModel" )
-		net.Start("Bodygroups_Set")
+		
+	    hook.Run( "PS2_DoUpdatePreviewModel" )
+		
+	    net.Start("Bodygroups_Set")
 	        net.WriteUInt(self.id, 32)
 		    net.WriteString(string.gsub(self.groups, "%s+", ""))
-			net.WriteString(self.skin)
+		    net.WriteString(self.skin)
 	    net.SendToServer()
 	end
 	
@@ -64,6 +63,7 @@ function PANEL:Init()
 end
 
 function PANEL:UpdateAndList() 
+
 		self.bdcontrolspanel:Clear()
 		
 		hook.Run( "PS2_DoUpdatePreviewModel" )
@@ -72,7 +72,8 @@ function PANEL:UpdateAndList()
 		
 		if playerModelItem == nil then return end
 		
-		self.id     = playerModelItem.id or 0
+		self.id     = playerModelItem.id
+		
 		self.skin   = self.player.BodygroupsData[self.id] and self.player.BodygroupsData[self.id][1] or 0
 		self.groups = self.player.BodygroupsData[self.id] and self.player.BodygroupsData[self.id][2] or "0"
 		
@@ -82,7 +83,8 @@ function PANEL:UpdateAndList()
 		
 		local nskins = self.previewentity:SkinCount() - 1
 		if ( nskins > 0 ) then
-			local skins = vgui.Create( "DNumSlider" )
+			local skins = self.bdcontrolspanel:Add( "DNumSlider" )
+			skins:SetSkin( "Default" )
 			skins:Dock( TOP )
 			skins:SetText( "Skin" )
 			skins:SetDark( false )
@@ -95,18 +97,17 @@ function PANEL:UpdateAndList()
 			    self.preview.Entity:SetSkin( math.Round( val ) )
 		        self.skin = math.Round( val )
 			end
-			
-			self.bdcontrolspanel:Add( skins )
-			self.bdcontrolspanel:Layout()
+
 			self.preview.Entity:SetSkin( self.skin )
 			self.ApplyBtn:SetVisible(true)
 		end
-
+	
 		local groups = string.Explode( " ", self.groups )
 		for k = 0, self.previewentity:GetNumBodyGroups() - 1 do
 			if ( self.previewentity:GetBodygroupCount( k ) <= 1 ) then continue end
 
-			local bgroup = vgui.Create( "DNumSlider" )
+			local bgroup = self.bdcontrolspanel:Add( "DNumSlider" )
+			bgroup:SetSkin( "Default" )
 			bgroup:Dock( TOP )
 			bgroup:SetText( MakeNiceName( self.previewentity:GetBodygroupName( k ) ) )
 			bgroup:SetDark( false )
@@ -118,17 +119,16 @@ function PANEL:UpdateAndList()
 			bgroup:SetValue( groups[ k + 1 ] or 0 )
 			bgroup.OnValueChanged = function( pnl, val ) 
 			    self.preview.Entity:SetBodygroup( pnl.typenum, math.Round( val ) )
-				local str = string.Explode( " ", self.groups )
+			    local str = string.Explode( " ", self.groups )
 		        if ( #str < pnl.typenum + 1 ) then for i = 1, pnl.typenum + 1 do str[ i ] = str[ i ] or 0 end end
 		        str[ pnl.typenum + 1 ] = math.Round( val )
 		        self.groups = table.concat( str, " " )
 			end
-			
-			self.bdcontrolspanel:Add( bgroup )
-	        self.bdcontrolspanel:Layout()
+
 			self.preview.Entity:SetBodygroup( k, groups[ k + 1 ] or 0 )
 			self.ApplyBtn:SetVisible(true)
 		end
+
 end
 
 Derma_Hook( PANEL, "Paint", "Paint", "PointshopInventoryTab" )
