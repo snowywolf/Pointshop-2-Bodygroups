@@ -54,7 +54,7 @@ function PANEL:Init()
 	self:UpdateAndList()
 	
 	hook.Add( "PS2_ItemEquipped", "ItemEquiped", function( ply, item )
-	    if LocalPlayer() != ply or item.id != LocalPlayer().PS2_Slots["Model"].id then return end
+	    	    if LocalPlayer() != ply or !LocalPlayer().PS2_Slots.model or item.id != LocalPlayer().PS2_Slots["Model"].id then return end
 	    timer.Simple( 0, function( )
 	        self.ApplyBtn:SetVisible(false)
 	        self:UpdateAndList()
