@@ -1,138 +1,137 @@
---{Made by Sno}--
- 
+
+local Player = LocalPlayer()
+
 local PANEL = {}
 
 function PANEL:Init()
-	
-	self.id = 0
-	self.skin = 0
-	self.groups = "0"
-	
-        self.player = LocalPlayer()
-	
-	self.leftPanel = vgui.Create("DPanel", self)
-	self.leftPanel:DockMargin( 8, 8, 8, 8 )
-	self.leftPanel:DockPadding( 8, 8, 8, 8 )
-	self.leftPanel:SetWide( 400 )
-	self.leftPanel:Dock( LEFT )
-	Derma_Hook( self.leftPanel, "Paint", "Paint", "InnerPanel" )
 
-	self.bdcontrolspanel = vgui.Create( "DScrollPanel", self.leftPanel )
-	self.bdcontrolspanel:DockMargin( 18, 0, 0, 0)
-        self.bdcontrolspanel:Dock( FILL )
-	
-	self.bottomPnl = vgui.Create( "DPanel", self.leftPanel )
-	self.bottomPnl:Dock( BOTTOM )
-	self.bottomPnl:SetTall( 50 )
-	self.bottomPnl:DockMargin( 0, 8, 0, 0 )
-	self.bottomPnl:DockPadding( 5, 5, 5, 5 )
-	Derma_Hook( self.bottomPnl, "Paint", "Paint", "InnerPanel" )
-	
-	self.ApplyBtn = vgui.Create( "DButton", self.bottomPnl )
+	self.ModelID = LocalPlayer().PS2_Slots["Model"] and LocalPlayer().PS2_Slots["Model"].id or 0
+
+	self.skin   = 0
+	self.groups = "0"
+
+  self.cleared = true
+
+	local MainPanel = vgui.Create( "DPanel", self )
+	MainPanel:DockMargin( 8, 8, 8, 8 )
+	MainPanel:DockPadding( 8, 8, 8, 8 )
+	MainPanel:SetWide( 400 )
+	MainPanel:Dock( LEFT )
+	Derma_Hook( MainPanel, "Paint", "Paint", "InnerPanel" )
+
+	local bottomPnl = vgui.Create( "DPanel", MainPanel )
+	bottomPnl:Dock( BOTTOM )
+	bottomPnl:SetTall( 50 )
+	bottomPnl:DockMargin( 0, 8, 0, 0 )
+	bottomPnl:DockPadding( 5, 5, 5, 5 )
+	Derma_Hook( bottomPnl, "Paint", "Paint", "InnerPanel" )
+
+	self.ScrollPanel = vgui.Create( "DScrollPanel", MainPanel )
+	self.ScrollPanel:DockMargin( 18, 0, 0, 0)
+	self.ScrollPanel:Dock( FILL )
+	self.ScrollPanel.Clear = function( ScrollPanel )
+		self.cleared = true
+    self.ApplyBtn:SetVisible(false)
+		return ScrollPanel.pnlCanvas:Clear()
+	end
+
+	self.ApplyBtn = vgui.Create( "DButton", bottomPnl )
 	self.ApplyBtn:Dock( FILL )
 	self.ApplyBtn:SetText( "Apply" )
 	self.ApplyBtn:SetVisible(false)
 	self.ApplyBtn.DoClick = function()
-	    self.player.BodygroupsData[self.id] = {self.skin, self.groups}
-		
-	    hook.Run( "PS2_DoUpdatePreviewModel" )
-		
-	    net.Start("Bodygroups_Set")
-	        net.WriteUInt(self.id, 32)
-		    net.WriteString(string.gsub(self.groups, "%s+", ""))
-		    net.WriteString(self.skin)
-	    net.SendToServer()
+			Player.BodygroupsData[self.ModelID] = {self.skin, self.groups}
+
+			hook.Run( "PS2_DoUpdatePreviewModel" )
+
+			net.Start("Bodygroups_Set")
+				net.WriteUInt(self.ModelID, 16)
+				net.WriteString(string.gsub(self.groups, "%s+", ""))
+				net.WriteUInt(self.skin, 5)
+			net.SendToServer()
 	end
-	
-	self.preview = vgui.Create( "DPointshopInventoryPreviewPanel", self )
-	self.preview:DockMargin( 0, 8, 8, 8 )
-	self.preview:DockPadding( 0, 8, 8, 8 )
-	self.preview:Dock( FILL )
-	self.preview:SetFOV( 65 )
-	self.preview:SetAnimated( true )
+
+	self.PreviewPanel = vgui.Create( "DPointshopInventoryPreviewPanel", self )
+	self.PreviewPanel:DockMargin( 0, 8, 8, 8 )
+	self.PreviewPanel:DockPadding( 0, 8, 8, 8 )
+	self.PreviewPanel:Dock( FILL )
+	self.PreviewPanel:SetFOV( 65 )
+	self.PreviewPanel:SetAnimated( true )
 
 	self:UpdateAndList()
-	
-	hook.Add( "PS2_ItemEquipped", "ItemEquiped", function( ply, item )
-	    if LocalPlayer() != ply or !LocalPlayer().PS2_Slots.Model or item.id != LocalPlayer().PS2_Slots["Model"].id then return end
-	    timer.Simple( 0, function( )
-	        self.ApplyBtn:SetVisible(false)
-	        self:UpdateAndList()
-        end)
+
+	hook.Add("PS2_ItemEquipped", "BGItemEquipped", function(ply, item)
+    if !self.cleared then self.ScrollPanel:Clear() end
+		if Player != ply or !LocalPlayer().PS2_Slots["Model"] or Player.PS2_Slots["Model"].id != item.id then return end
+
+		self.ModelID = item.id
+
+		self:UpdateAndList()
 	end)
 
 end
 
-function PANEL:UpdateAndList() 
+function PANEL:UpdateAndList()
 
-		self.bdcontrolspanel:Clear()
-		
-		hook.Run( "PS2_DoUpdatePreviewModel" )
-		
-        local playerModelItem = self.player.PS2_Slots["Model"]
-		
-		if playerModelItem == nil then return end
-		
-		self.id     = playerModelItem.id
-		
-		self.skin   = self.player.BodygroupsData[self.id] and self.player.BodygroupsData[self.id][1] or 0
-		self.groups = self.player.BodygroupsData[self.id] and self.player.BodygroupsData[self.id][2] or "0"
-		
-		self.previewentity = Pointshop2.InventoryPreviewPanel.Entity
-		
-		if self.id == 0 then return end
-		
-		local nskins = self.previewentity:SkinCount() - 1
-		if ( nskins > 0 ) then
-			local skins = self.bdcontrolspanel:Add( "DNumSlider" )
-			skins:SetSkin( "Default" )
-			skins:Dock( TOP )
-			skins:SetText( "Skin" )
-			skins:SetDark( false )
-			skins:SetTall( 50 )
-			skins:SetDecimals( 0 )
-			skins:SetMax( nskins )
-			skins:SetValue( self.skin )
-			skins.type = "skin"
-			skins.OnValueChanged = function( pnl, val ) 
-			    self.preview.Entity:SetSkin( math.Round( val ) )
-		        self.skin = math.Round( val )
+	if self.ModelID == 0 then return end
+
+	hook.Run( "PS2_DoUpdatePreviewModel" )
+
+	self.skin   = Player.BodygroupsData[self.ModelID] and Player.BodygroupsData[self.ModelID][1] or 0
+	self.groups = Player.BodygroupsData[self.ModelID] and Player.BodygroupsData[self.ModelID][2] or "0"
+
+	local PS2PreviewEntity   = Pointshop2.InventoryPreviewPanel.Entity
+
+	local nskins = PS2PreviewEntity:SkinCount() - 1
+	if ( nskins > 0 ) then
+		local skins = self.ScrollPanel:Add( "DNumSlider" )
+		skins:SetSkin( "Default" )
+		skins:Dock( TOP )
+		skins:SetText( "Skin" )
+		skins:SetDark( false )
+		skins:SetTall( 50 )
+		skins:SetDecimals( 0 )
+		skins:SetMax( nskins )
+		skins:SetValue( self.skin )
+		skins.OnValueChanged = function( pnl, val )
+				self.PreviewPanel.Entity:SetSkin( math.Round( val ) )
+				self.skin = math.Round( val )
 			end
-
-			self.preview.Entity:SetSkin( self.skin )
-			self.ApplyBtn:SetVisible(true)
 		end
-	
-		local groups = string.Explode( " ", self.groups )
-		for k = 0, self.previewentity:GetNumBodyGroups() - 1 do
-			if ( self.previewentity:GetBodygroupCount( k ) <= 1 ) then continue end
 
-			local bgroup = self.bdcontrolspanel:Add( "DNumSlider" )
-			bgroup:SetSkin( "Default" )
-			bgroup:Dock( TOP )
-			bgroup:SetText( MakeNiceName( self.previewentity:GetBodygroupName( k ) ) )
-			bgroup:SetDark( false )
-			bgroup:SetTall( 50 )
-			bgroup:SetDecimals( 0 )
-			bgroup.type = "bgroup"
-			bgroup.typenum = k
-			bgroup:SetMax( self.previewentity:GetBodygroupCount( k ) - 1 )
-			bgroup:SetValue( groups[ k + 1 ] or 0 )
-			bgroup.OnValueChanged = function( pnl, val ) 
-			    self.preview.Entity:SetBodygroup( pnl.typenum, math.Round( val ) )
-			    local str = string.Explode( " ", self.groups )
-		        if ( #str < pnl.typenum + 1 ) then for i = 1, pnl.typenum + 1 do str[ i ] = str[ i ] or 0 end end
-		        str[ pnl.typenum + 1 ] = math.Round( val )
-		        self.groups = table.concat( str, " " )
-			end
+	local groups = string.Explode( " ", self.groups )
+	for k = 0, PS2PreviewEntity:GetNumBodyGroups() - 1 do
+		if ( PS2PreviewEntity:GetBodygroupCount( k ) <= 1 ) then continue end
 
-			self.preview.Entity:SetBodygroup( k, groups[ k + 1 ] or 0 )
-			self.ApplyBtn:SetVisible(true)
+		local bgroup = self.ScrollPanel:Add( "DNumSlider" )
+		bgroup:SetSkin( "Default" )
+		bgroup:Dock( TOP )
+		bgroup:SetText( MakeNiceName( PS2PreviewEntity:GetBodygroupName( k ) ) )
+		bgroup:SetDark( false )
+		bgroup:SetTall( 50 )
+		bgroup:SetDecimals( 0 )
+		bgroup:SetMax( PS2PreviewEntity:GetBodygroupCount( k ) - 1 )
+		bgroup:SetValue( groups[ k + 1 ] or 0 )
+		bgroup.typenum = k
+		bgroup.OnValueChanged = function( pnl, val )
+				self.PreviewPanel.Entity:SetBodygroup( pnl.typenum, math.Round( val ) )
+
+				local str = string.Explode( " ", self.groups )
+				if ( #str < pnl.typenum + 1 ) then for i = 1, pnl.typenum + 1 do str[ i ] = str[ i ] or 0 end end
+				str[ pnl.typenum + 1 ] = math.Round( val )
+
+				self.groups = table.concat( str, " " )
 		end
+	end
+
+	if PS2PreviewEntity:GetNumBodyGroups() > 1 or nskins > 0 then
+		self.cleared = false
+		self.ApplyBtn:SetVisible(true)
+	end
 
 end
 
 Derma_Hook( PANEL, "Paint", "Paint", "PointshopInventoryTab" )
-derma.DefineControl( "DPointshopBodygroupsPanel", "", PANEL )
+derma.DefineControl( "DPointshopBGPanel", "", PANEL )
 
-Pointshop2:AddInventoryPanel("Bodygroups", "icon64/playermodel.png", "DPointshopBodygroupsPanel")
+Pointshop2:AddInventoryPanel("Bodygroups", "icon64/playermodel.png", "DPointshopBGPanel")
