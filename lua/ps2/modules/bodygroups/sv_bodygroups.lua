@@ -33,7 +33,7 @@ hook.Add( "PS2_PlayerFullyLoaded", "BG_LoadBodygroups", LoadBodygroups )
 function SetBodyGroups( user )
     timer.Simple(0, function()
 
-      if !user:IsValid() or user:PS2_GetItemInSlot( "Model" ) == nil then return   end
+      if !user:IsValid() or user:PS2_GetItemInSlot( "Model" ) == nil then return true end
 
 	    if user.BodygroupsData and user.BodygroupsData.modelId == user:PS2_GetItemInSlot( "Model" ).id then
 
