@@ -5,9 +5,9 @@ Pointshop2.BodygroupsModel.static.model = {
     tableName = "ps2_bodygroups",
     fields = {
     ownerId   = "int",
-		modelId   = "int",
-		skin      = "int",
+    modelId   = "int",
+    skin      = "int",
     groups    = "string"
-	}
+  }
 }
 Pointshop2.BodygroupsModel:include( DatabaseModel ) --Adds the model functionality and automagic functions

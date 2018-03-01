@@ -8,9 +8,9 @@ MODULE.Blueprints = {}
 
 MODULE.SettingButtons = {}
 
-MODULE.Settings = { 
-	Shared = {},
-	Server = {}
+MODULE.Settings = {
+  Shared = {},
+  Server = {}
 }
-	
+
 Pointshop2.RegisterModule( MODULE )
