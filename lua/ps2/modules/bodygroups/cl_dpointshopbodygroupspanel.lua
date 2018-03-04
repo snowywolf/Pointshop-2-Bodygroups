@@ -46,8 +46,8 @@ function PANEL:Init()
 
       net.Start("Bodygroups_Set")
         net.WriteUInt(self.ModelID, 16)
-        net.WriteString(string.gsub(self.groups, "%s+", ""))
         net.WriteUInt(self.skin, 5)
+        net.WriteString(string.gsub(self.groups, "%s+", ""))
       net.SendToServer()
   end
 
@@ -60,7 +60,7 @@ function PANEL:Init()
 
   self:UpdateAndList()
 
-  hook.Add("PS2_ItemEquipped", "BGItemEquipped", function(ply, item)
+  hook.Add( "PS2_ItemEquipped", "BGItemEquipped", function( ply, item )
     if !self.cleared then self.ScrollPanel:Clear() end
     if Player != ply or !LocalPlayer().PS2_Slots["Model"] or Player.PS2_Slots["Model"].id != item.id then return end
 
@@ -134,4 +134,4 @@ end
 Derma_Hook( PANEL, "Paint", "Paint", "PointshopInventoryTab" )
 derma.DefineControl( "DPointshopBGPanel", "", PANEL )
 
-Pointshop2:AddInventoryPanel("Bodygroups", "icon64/playermodel.png", "DPointshopBGPanel")
+Pointshop2:AddInventoryPanel( "Bodygroups", "icon64/playermodel.png", "DPointshopBGPanel" )

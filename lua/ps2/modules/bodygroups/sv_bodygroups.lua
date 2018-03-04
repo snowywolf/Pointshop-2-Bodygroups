@@ -33,28 +33,28 @@ hook.Add( "PS2_PlayerFullyLoaded", "BG_LoadBodygroups", LoadBodygroups )
 function SetBodyGroups( user )
     timer.Simple(0, function()
 
-      if !user:IsValid() or user:PS2_GetItemInSlot( "Model" ) == nil then return true end
+      if !user:IsValid() or user:PS2_GetItemInSlot( "Model" ) == nil then return end
 
       if user.BodygroupsData and user.BodygroupsData.modelId == user:PS2_GetItemInSlot( "Model" ).id then
 
         user:SetBodyGroups(user.BodygroupsData.groups)
         user:SetSkin(user.BodygroupsData.skin)
 
-        return true
+        return
       end
 
   end )
 end
 hook.Add( "PS2_PlayermodelShouldShow", "BG_SetBodyGroups", SetBodyGroups )
 
-net.Receive("Bodygroups_Set", function(len, client)
+net.Receive( "Bodygroups_Set", function( len, client )
   if client.AntiSpam != nil and client.AntiSpam > SysTime() then return end
 
-  client.AntiSpam = SysTime() + 2
+  client.AntiSpam = SysTime() + 1
 
-  local ItemID = net.ReadInt(16)
+  local ItemID = net.ReadUInt(16)
+  local Skin   = net.ReadUInt(5)
   local Groups = net.ReadString()
-  local Skin   = net.ReadInt(5)
 
   client:SetBodyGroups(Groups)
   client:SetSkin(Skin)

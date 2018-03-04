@@ -15,7 +15,7 @@ function MakeNiceName( str )
   return string.Implode( " ", newname )
 end
 
-hook.Add("PS2_GetPreviewModel", "BodygroupSupport", function()
+hook.Add( "PS2_GetPreviewModel", "BodygroupSupport", function( )
   if Pointshop2:IsPlayerModelEquipped() then
     local playerModelItem = Player.PS2_Slots["Model"]
     local BodyGroups = Player.BodygroupsData[playerModelItem.id]
@@ -23,7 +23,7 @@ hook.Add("PS2_GetPreviewModel", "BodygroupSupport", function()
     return {
       model = playerModelItem.playerModel,
       skin = BodyGroups and BodyGroups[1] or 0,
-      bodygroups = BodyGroups and BodyGroups[2] or 0
+      bodygroups = BodyGroups and BodyGroups[2] or "0"
     }
   end
 
@@ -34,7 +34,7 @@ hook.Add("PS2_GetPreviewModel", "BodygroupSupport", function()
   }
 end)
 
-net.Receive("Bodygroups_Init", function(len)
+net.Receive("Bodygroups_Init", function( len )
   local id = net.ReadUInt(16)
   local skin = net.ReadUInt(5)
   local groups = net.ReadString()
@@ -44,6 +44,6 @@ net.Receive("Bodygroups_Init", function(len)
   hook.Run("PS2_DoUpdatePreviewModel")
 end)
 
-hook.Add("PS2_PopulateCredits", "AddBodygroupCreds", function(panel)
+hook.Add( "PS2_PopulateCredits", "AddBodygroupCreds", function( panel )
   panel:AddCreditSection("Bodygroups Module", [[ Bodygroups Module by Snowywolf (https://github.com/snowywolf/Pointshop-2-Bodygroups). ]])
 end)
