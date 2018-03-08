@@ -10,8 +10,6 @@ function PANEL:Init()
   self.skin   = 0
   self.groups = "0"
 
-  self.cleared = true
-
   local MainPanel = vgui.Create( "DPanel", self )
   MainPanel:DockMargin( 8, 8, 8, 8 )
   MainPanel:DockPadding( 8, 8, 8, 8 )
@@ -30,7 +28,6 @@ function PANEL:Init()
   self.ScrollPanel:DockMargin( 18, 0, 0, 0)
   self.ScrollPanel:Dock( FILL )
   self.ScrollPanel.Clear = function( ScrollPanel )
-    self.cleared = true
     self.ApplyBtn:SetVisible(false)
     return ScrollPanel.pnlCanvas:Clear()
   end
@@ -58,29 +55,32 @@ function PANEL:Init()
   self.PreviewPanel:SetFOV( 65 )
   self.PreviewPanel:SetAnimated( true )
 
-  self:UpdateAndList()
+  if self.ModelID != 0 then self:UpdateAndList() end
 
   hook.Add( "PS2_ItemEquipped", "BGItemEquipped", function( ply, item )
-    if !self.cleared then self.ScrollPanel:Clear() end
-    if Player != ply or !LocalPlayer().PS2_Slots["Model"] or Player.PS2_Slots["Model"].id != item.id then return end
+    if Player != ply or !instanceOf( Pointshop2.GetItemClassByName( "base_playermodel" ), item ) then return end
 
     self.ModelID = item.id
 
     self:UpdateAndList()
   end)
 
+  hook.Add( "PS2_ItemUnequipped", "BGItemUnequipped", function( ply, item )
+    if Player != ply or !instanceOf( Pointshop2.GetItemClassByName( "base_playermodel" ), item ) then return end
+
+    self.ScrollPanel:Clear()
+  end)
+
 end
 
 function PANEL:UpdateAndList()
-
-  if self.ModelID == 0 then return end
 
   hook.Run( "PS2_DoUpdatePreviewModel" )
 
   self.skin   = Player.BodygroupsData[self.ModelID] and Player.BodygroupsData[self.ModelID][1] or 0
   self.groups = Player.BodygroupsData[self.ModelID] and Player.BodygroupsData[self.ModelID][2] or "0"
 
-  local PS2PreviewEntity   = Pointshop2.InventoryPreviewPanel.Entity
+  local PS2PreviewEntity = Pointshop2.InventoryPreviewPanel.Entity
 
   local nskins = PS2PreviewEntity:SkinCount() - 1
   if ( nskins > 0 ) then
@@ -125,7 +125,6 @@ function PANEL:UpdateAndList()
   end
 
   if PS2PreviewEntity:GetNumBodyGroups() > 1 or nskins > 0 then
-    self.cleared = false
     self.ApplyBtn:SetVisible(true)
   end
 
