@@ -42,7 +42,6 @@ function PANEL:Init()
       hook.Run( "PS2_DoUpdatePreviewModel" )
 
       net.Start("Bodygroups_Set")
-        net.WriteUInt(self.ModelID, 16)
         net.WriteUInt(self.skin, 5)
         net.WriteString(string.gsub(self.groups, "%s+", ""))
       net.SendToServer()
